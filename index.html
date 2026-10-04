@@ -4,19 +4,28 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>grAy</title>
+<link rel="icon" href="logo.png">
 <style>
-:root{--desk:#8fb5b0;--face:#c6bddc;--hi:#e4def0;--lo:#8d86a6;--dk:#4a4560;--bar:#7c66c4;--t1:#d98bb0;--t2:#8f7bd0;--ink:#2d2a38;--paper:#ece3c6;--field:#ece8f3;
-box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--desk:#8fb5b0;--face:#c6bddc;--hi:#e4def0;--lo:#8d86a6;--dk:#4a4560;--bar:#7c66c4;--t1:#d98bb0;--t2:#8f7bd0;--ink:#2d2a38;--paper:#ece3c6;--field:#ece8f3}
 *{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;min-height:100vh;background:var(--desk);color:var(--ink);font:12px/1.4 Tahoma,Verdana,"MS Sans Serif",sans-serif;padding-bottom:40px;
+body{margin:0;min-height:100vh;background:var(--desk);color:var(--ink);font:12px/1.4 Tahoma,Verdana,"MS Sans Serif",sans-serif;padding:env(safe-area-inset-top,0px) 0 70px;
 background-image:radial-gradient(var(--t2) 1px,transparent 1px),radial-gradient(var(--t1) 1px,transparent 1px);background-size:18px 18px;background-position:0 0,9px 9px}
-.win{background:var(--face);border:2px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);box-shadow:1px 1px 0 #0003,4px 4px 0 #0002;margin:14px auto;max-width:560px;outline:1px solid #2d2a38}
-.bar{display:flex;align-items:center;gap:6px;padding:3px 4px;background:var(--bar);color:#fff;font-weight:700;text-shadow:1px 1px 0 #0004}
+#top{text-align:center;padding:12px 10px 0;max-width:560px;margin:0 auto}
+h1{margin:0 0 6px;font:700 28px Georgia,serif;color:#a8456f;display:flex;align-items:center;justify-content:center;gap:8px}
+marquee{background:#e6c3d6;border:2px solid;border-color:var(--dk) var(--hi) var(--hi) var(--dk);padding:2px}
+#desk{position:relative;padding:0 10px}
+.win{background:var(--face);border:2px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);box-shadow:4px 4px 0 #0002;outline:1px solid #2d2a38;margin:14px auto;max-width:560px;width:100%}
+.win.hide{display:none}
+.win.max{position:fixed;inset:0 0 calc(36px + env(safe-area-inset-bottom,0px)) 0;max-width:none;margin:0;overflow:auto;left:0!important;top:0!important;width:auto!important}
+@media(min-width:720px){
+ #desk{height:calc(100vh - 140px)}
+ .win{position:absolute;margin:0;left:var(--x);top:var(--y);width:var(--w)}
+}
+.bar{display:flex;align-items:center;gap:3px;padding:3px 4px;background:var(--bar);color:#fff;font-weight:700;text-shadow:1px 1px 0 #0004;user-select:none;touch-action:none}
+.pink .bar{background:#c9729f}
 .bar span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar i{width:16px;height:14px;background:var(--face);color:var(--ink);font:700 10px/12px Tahoma;text-align:center;font-style:normal;text-shadow:none;border:1px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi)}
+.bar button{width:18px;height:16px;padding:0;font:700 10px/12px Tahoma,sans-serif;text-shadow:none}
 .body{padding:10px}
-h1{margin:0 0 4px;font:700 20px Georgia,serif;color:var(--ink)}
 .in{background:var(--field);border:2px solid;border-color:var(--dk) var(--hi) var(--hi) var(--dk);padding:6px;width:100%;font:12px Tahoma,Verdana,sans-serif;color:var(--ink)}
 textarea.in{height:90px;resize:vertical}
 label{display:block;margin:6px 0 2px}
@@ -24,7 +33,7 @@ button{font:12px Tahoma,Verdana,sans-serif;color:var(--ink);background:var(--fac
 button:active{border-color:var(--dk) var(--hi) var(--hi) var(--dk)}
 button.ok{background:#a3d3b3}button.no{background:#e3a2ae}
 .row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
-#wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+#grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
 .note{background:var(--paper);border:1px solid var(--dk);box-shadow:2px 2px 0 #0002;display:flex;flex-direction:column;min-height:110px;word-break:break-word}
 .note b{background:var(--c,var(--t1));color:#fff;padding:2px 5px;font-size:11px;text-shadow:1px 1px 0 #0004}
 .note p{margin:0;padding:6px;flex:1;white-space:pre-wrap}
@@ -32,44 +41,74 @@ button.ok{background:#a3d3b3}button.no{background:#e3a2ae}
 .pend{background:var(--paper);border:1px dashed var(--dk);padding:6px;margin-bottom:6px}
 .pend p{margin:2px 0 6px;white-space:pre-wrap;word-break:break-word}
 .sunk{border:2px solid;border-color:var(--dk) var(--hi) var(--hi) var(--dk);padding:6px;background:var(--field)}
-.task{position:fixed;left:0;right:0;bottom:0;height:34px;display:flex;align-items:center;gap:6px;padding:3px 4px calc(3px + env(safe-area-inset-bottom,0px));height:calc(34px + env(safe-area-inset-bottom,0px));background:var(--face);border-top:2px solid var(--hi)}
-.start{font-weight:700;background:#e0a3c1}
-.pink .bar{background:#c9729f}
-h1{color:#a8456f}
-marquee{background:#e6c3d6!important}
-.tray{margin-left:auto;padding:3px 8px}
 .err{color:#c0305a}
-marquee{background:var(--field);border:2px solid;border-color:var(--dk) var(--hi) var(--hi) var(--dk);padding:2px}
+#task{position:fixed;left:0;right:0;bottom:0;z-index:1000;display:flex;align-items:center;gap:4px;padding:3px 4px calc(3px + env(safe-area-inset-bottom,0px));background:var(--face);border-top:2px solid var(--hi)}
+#menu{position:fixed;bottom:calc(40px + env(safe-area-inset-bottom,0px));z-index:1001;background:var(--face);border:2px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);box-shadow:4px 4px 0 #0002;min-width:210px;padding:2px}
+#menu[hidden],#menu [hidden]{display:none}
+#menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 10px}
+#menu button:hover{background:var(--bar);color:#fff}
+#tasks{display:flex;gap:4px;flex:1;overflow:hidden}
+#tasks button{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#tasks button.on{border-color:var(--dk) var(--hi) var(--hi) var(--dk);background:var(--field);font-weight:700}
+.start{font-weight:700;background:#e0a3c1}
+.tray{padding:3px 8px}
 </style>
 </head>
 <body>
 
-<div class="win"><div class="bar"><span>&#128140; grAy.exe</span><i>_</i><i>&#9633;</i><i>x</i></div>
-<div class="body">
+<header id="top">
 <h1>grAy</h1>
 <marquee scrollamount="3">｡ﾟ･° ｡‧˚⋅🦋 ˚ ༘𓆩♡𓆪 ೀ⋆｡˚ 🦋｡ﾟ･° ｡‧˚⋅</marquee>
-</div></div>
+</header>
 
-<div class="win pink"><div class="bar"><span>&#9993; New Message</span><i>_</i><i>&#9633;</i><i>x</i></div>
+<main id="desk">
+
+<section class="win" id="wall" data-title="The Wall" data-x="130" data-y="10" data-w="500px">
+<div class="bar"><span>&#128193; The Wall</span></div>
+<div class="body"><div id="grid"></div>
+<div class="row"><small>Approved notes only</small><button id="refresh">Refresh</button></div></div>
+</section>
+
+<section class="win pink" id="write" data-title="Write to Aadya" data-x="660" data-y="10" data-w="380px">
+<div class="bar"><span>&#9993; New Message</span></div>
 <div class="body">
 <div class="sunk">To: Aadya</div>
 <label for="msg">Message:</label>
 <textarea id="msg" class="in" maxlength="500" placeholder="type your unsent note to aadya here..."></textarea>
 <div class="row"><small id="cnt">0 / 500</small><button id="send">Send anonymously</button></div>
-<div id="status" class="sunk" style="margin-top:8px">Ready.</div>
-</div></div>
+<div id="status" class="sunk" style="margin-top:8px" hidden></div>
+</div>
+</section>
 
-<div class="win pink" id="loginWin" hidden><div class="bar"><span>&#128273; Owner Login</span><i>_</i><i>&#9633;</i><i>x</i></div>
-<div class="body"><label for="em">Email:</label><input id="em" type="email" class="in"><label for="pw">Password:</label><input id="pw" type="password" class="in">
-<div class="row"><span></span><button id="login">Log in</button></div></div></div>
+<section class="win" id="intro" data-title="Intro" data-start="1" data-x="330" data-y="70" data-w="340px">
+<div class="bar"><span>&#10084; Intro</span></div>
+<div class="body">
+<div class="row" style="margin-top:0;justify-content:flex-start"><button data-open="write">Write a note</button><button data-open="wall">Read the Wall</button></div>
+<div class="row"><span></span><button id="adminLink" style="border:0;background:none;padding:0;color:var(--lo);text-decoration:underline">owner login</button></div>
+</div>
+</section>
 
-<div class="win pink" id="inboxWin" hidden><div class="bar"><span>&#128274; Inbox - pending review (<b id="pc">0</b>)</span><i>_</i><i>&#9633;</i><i>x</i></div>
-<div class="body"><div id="inbox"><div class="sunk">Nothing waiting.</div></div></div></div>
+<section class="win pink" id="inbox" data-title="Inbox" data-x="300" data-y="60" data-w="480px">
+<div class="bar"><span>&#128274; Inbox - pending review (<b id="pc">0</b>)</span></div>
+<div class="body"><div id="pending"><div class="sunk">Nothing waiting.</div></div></div>
+</section>
 
-<div class="win"><div class="bar"><span>&#128193; The Wall (approved notes)</span><i>_</i><i>&#9633;</i><i>x</i></div>
-<div class="body"><div id="wall"><div class="sunk">Loading...</div></div></div></div>
+<section class="win pink" id="login" data-title="Owner Login" data-x="360" data-y="120" data-w="320px">
+<div class="bar"><span>&#128273; Owner Login</span></div>
+<div class="body">
+<label for="em">Email:</label><input id="em" type="email" class="in">
+<label for="pw">Password:</label><input id="pw" type="password" class="in">
+<div class="row"><span></span><button id="loginBtn">Log in</button></div>
+</div>
+</section>
+</main>
 
-<div class="task"><button class="start">&#10084; Start</button><button>grAy.exe</button><button id="adminBtn">&#128273; admin</button><div class="sunk tray" id="clock"></div></div>
+<div id="menu" hidden>
+<button data-open="wall">&#128193; The Wall</button>
+<button data-open="write">&#9993; Write to Aadya</button>
+<button data-open="inbox" id="mInbox" hidden>&#128274; Inbox</button>
+</div>
+<div id="task"><button class="start" data-open="intro">&#10084; Intro</button><button id="tabsBtn">&#9776; Tabs</button><div id="tasks"></div><div class="sunk tray" id="clock"></div></div>
 
 <script type="module">
 import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
@@ -79,32 +118,82 @@ import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged}from"https:
 const app=initializeApp({apiKey:"AIzaSyBK4O0nPD9aLba1lJWEZsFEfJFdswgNhys",authDomain:"gray-1287d.firebaseapp.com",projectId:"gray-1287d",appId:"1:742095355:web:5a82872e0ceef972aff35e"});
 const db=getFirestore(app),auth=getAuth(app),notes=collection(db,"notes");
 const $=id=>document.getElementById(id);
+const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
 const colors=["#d98bb0","#9a86d8","#5fb3a8","#d99a5e","#6f9fdc"];
 let authed=false;
-const say=(t,bad)=>{$("status").textContent=t;$("status").className="sunk"+(bad?" err":"")};
+
+/* window manager */
+const W=[...document.querySelectorAll(".win")],state={};
+let z=10,topId=null;
+function render(){
+  W.forEach(w=>w.classList.toggle("hide",state[w.id]!=="open"));
+  const t=$("tasks");t.replaceChildren();
+  W.forEach(w=>{
+    if(state[w.id]==="closed"||w.id==="intro")return;
+    const b=el("button",state[w.id]==="open"&&topId===w.id?"on":"",w.dataset.title);
+    b.onclick=()=>state[w.id]!=="min"&&topId===w.id?setState(w.id,"min"):openWin(w.id);
+    t.append(b);
+  });
+}
+function setState(id,s){
+  state[id]=s;
+  if(s==="open"){topId=id;$(id).style.zIndex=++z}else if(topId===id)topId=null;
+  render();
+}
+function openWin(id){
+  setState(id,"open");
+  if(innerWidth<720)$(id).scrollIntoView({behavior:"smooth",block:"start"});
+}
+W.forEach(w=>{
+  state[w.id]=w.dataset.start?"open":"closed";
+  w.style.setProperty("--x",w.dataset.x+"px");w.style.setProperty("--y",w.dataset.y+"px");w.style.setProperty("--w",w.dataset.w);
+  const bar=w.querySelector(".bar");
+  [["_","Minimize","min"],["\u25A1","Maximize","max"],["x","Close","close"]].forEach(([t,label,a])=>{
+    const b=el("button",null,t);b.title=label;b.setAttribute("aria-label",label);
+    b.onclick=()=>a==="max"?w.classList.toggle("max"):setState(w.id,a==="min"?"min":"closed");
+    bar.append(b);
+  });
+  bar.ondblclick=e=>{if(!e.target.closest("button"))w.classList.toggle("max")};
+  w.addEventListener("pointerdown",()=>{if(state[w.id]==="open"&&topId!==w.id){topId=w.id;w.style.zIndex=++z;render()}});
+  bar.onpointerdown=e=>{
+    if(e.target.closest("button")||innerWidth<720||w.classList.contains("max"))return;
+    const sx=e.clientX-w.offsetLeft,sy=e.clientY-w.offsetTop;
+    bar.setPointerCapture(e.pointerId);
+    bar.onpointermove=m=>{w.style.setProperty("--x",Math.max(0,m.clientX-sx)+"px");w.style.setProperty("--y",Math.max(0,m.clientY-sy)+"px")};
+    bar.onpointerup=()=>{bar.onpointermove=bar.onpointerup=null};
+  };
+});
+document.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openWin(b.dataset.open));
+$("tabsBtn").onclick=()=>{const m=$("menu");m.style.left=$("tabsBtn").getBoundingClientRect().left+"px";m.hidden=!m.hidden};
+$("menu").onclick=e=>{if(e.target.closest("button"))$("menu").hidden=true};
+document.addEventListener("click",e=>{if(!e.target.closest("#menu,#tabsBtn"))$("menu").hidden=true});
+$("adminLink").onclick=()=>authed?signOut(auth):openWin("login");
 const tick=()=>$("clock").textContent=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
 tick();setInterval(tick,30000);
+render();
+
+/* notes */
+const say=(t,bad)=>{$("status").hidden=false;$("status").textContent=t;$("status").className="sunk"+(bad?" err":"")};
 $("msg").oninput=e=>$("cnt").textContent=e.target.value.length+" / 500";
-const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
 const secs=d=>d.data().createdAt?.seconds||0;
 const fetchNotes=async approved=>(await getDocs(query(notes,where("approved","==",approved)))).docs;
 
 async function loadWall(){
-  const w=$("wall");w.replaceChildren();
+  const g=$("grid");g.replaceChildren();
   try{
     const docs=(await fetchNotes(true)).sort((a,b)=>secs(b)-secs(a));
-    if(!docs.length)return w.append(el("div","sunk","No notes yet. Be the first!"));
+    if(!docs.length)return g.append(el("div","sunk","No notes yet. Be the first!"));
     docs.forEach(d=>{
       const n=d.data(),c=el("div","note");
       c.style.setProperty("--c",colors[n.color%colors.length]);
       c.append(el("b",null,"To: Aadya"),el("p",null,n.body),el("small",null,n.createdAt?n.createdAt.toDate().toLocaleDateString():""));
-      w.append(c);
+      g.append(c);
     });
-  }catch(e){w.append(el("div","sunk err","Could not load notes."))}
+  }catch(e){g.append(el("div","sunk err","Could not load notes."))}
 }
 
 async function loadInbox(){
-  const box=$("inbox");box.replaceChildren();
+  const box=$("pending");box.replaceChildren();
   try{
     const docs=(await fetchNotes(false)).sort((a,b)=>secs(a)-secs(b));
     $("pc").textContent=docs.length;
@@ -120,6 +209,7 @@ async function loadInbox(){
   }catch(e){box.append(el("div","sunk err","Could not load inbox."))}
 }
 
+$("refresh").onclick=loadWall;
 $("send").onclick=async()=>{
   const body=$("msg").value.trim();
   if(!body)return say("Type a message first.",1);
@@ -132,17 +222,20 @@ $("send").onclick=async()=>{
   $("send").disabled=false;
 };
 
+/* owner login */
 onAuthStateChanged(auth,u=>{
   authed=!!u;
-  $("inboxWin").hidden=!authed;$("loginWin").hidden=true;
-  $("adminBtn").textContent=authed?"\u{1F513} log out":"\u{1F511} admin";
-  if(authed)loadInbox();
+  $("adminLink").textContent=authed?"owner log out":"owner login";
+  $("mInbox").hidden=!authed;
+  setState("login","closed");
+  if(authed){setState("inbox","open");loadInbox()}else setState("inbox","closed");
 });
-$("adminBtn").onclick=()=>authed?signOut(auth):($("loginWin").hidden=!$("loginWin").hidden);
-$("login").onclick=async()=>{
+const login=async()=>{
   try{await signInWithEmailAndPassword(auth,$("em").value.trim(),$("pw").value);$("pw").value=""}
-  catch(e){say("Login failed: "+e.code,1)}
+  catch(e){alert("Login failed: "+e.code)}
 };
+$("loginBtn").onclick=login;
+$("pw").onkeydown=e=>{if(e.key==="Enter")login()};
 
 loadWall();
 </script>
