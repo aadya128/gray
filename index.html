@@ -322,22 +322,34 @@ function pump(){
     nextT+=DUR;stepN=(stepN+1)%64;
   }
 }
-function startMusic(){
+function silentWav(){
+  const n=8000,b=new Uint8Array(44+n),v=new DataView(b.buffer),w=(o,t)=>[...t].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));
+  w(0,"RIFF");v.setUint32(4,36+n,true);w(8,"WAVEfmt ");v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);
+  v.setUint32(24,8000,true);v.setUint32(28,8000,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,"data");v.setUint32(40,n,true);b.fill(128,44);
+  return URL.createObjectURL(new Blob([b],{type:"audio/wav"}));
+}
+let keep,userStopped=false;
+async function startMusic(){
   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  if(navigator.audioSession)navigator.audioSession.type="playback";
   if(!ac){
-    ac=new AC();master=ac.createGain();master.gain.value=.55;
+    ac=new AC();master=ac.createGain();master.gain.value=1.5;
     const lp=ac.createBiquadFilter(),comp=ac.createDynamicsCompressor(),dry=ac.createGain(),wet=ac.createGain(),rv=ac.createConvolver();
     lp.type="lowpass";lp.frequency.value=7000;dry.gain.value=.75;wet.gain.value=.55;rv.buffer=reverbIR(ac);
     master.connect(dry);master.connect(rv);rv.connect(wet);dry.connect(lp);wet.connect(lp);lp.connect(comp);comp.connect(ac.destination);
+    const u=ac.createBufferSource();u.buffer=ac.createBuffer(1,1,22050);u.connect(ac.destination);u.start(0);
   }
-  ac.resume();
+  if(!keep){keep=new Audio(silentWav());keep.loop=true}
+  Promise.resolve(keep.play()).catch(()=>{});
+  try{await ac.resume()}catch(e){}
+  if(ac.state!=="running")return;
   if(!timer){nextT=ac.currentTime+.1;timer=setInterval(pump,40)}
-  playing=true;$("rec").classList.add("on");
+  playing=true;userStopped=false;$("rec").classList.add("on");
 }
-function stopMusic(){clearInterval(timer);timer=0;playing=false;$("rec").classList.remove("on")}
+function stopMusic(){clearInterval(timer);timer=0;playing=false;userStopped=true;keep&&keep.pause();$("rec").classList.remove("on")}
 $("rec").onclick=()=>playing?stopMusic():startMusic();
-const unlock=e=>{removeEventListener("pointerdown",unlock);removeEventListener("keydown",unlock);if(!e.target.closest("#rec"))startMusic()};
-addEventListener("pointerdown",unlock);addEventListener("keydown",unlock);
+const unlock=e=>{if(!playing&&!userStopped&&!e.target.closest("#rec"))startMusic()};
+["click","touchend","keydown"].forEach(t=>addEventListener(t,unlock));
 document.addEventListener("visibilitychange",()=>{if(!ac)return;document.hidden?ac.suspend():playing&&ac.resume()});
 
 /* pixel doodle pad */
@@ -380,9 +392,10 @@ const refresh=()=>{loadWall();loadMine();if(owner)loadInbox()};
 const removeDoc=async(col,id)=>{try{await deleteDoc(doc(db,col,id))}catch(e){alert("Could not delete: "+e.code)}refresh()};
 
 async function loadWall(){
-  const g=$("grid");g.replaceChildren();
+  const g=$("grid");
   try{
     const docs=(await getAll(notes,where("approved","==",true))).sort((a,b)=>secs(b)-secs(a));
+    g.replaceChildren();
     if(!docs.length)return g.append(el("div","sunk","No notes yet. Be the first!"));
     docs.forEach(d=>{
       const n=d.data(),len=n.body.length,c=el("div","note"+(len<=45&&!n.img?" big":len>200?" wide":""));
@@ -393,15 +406,16 @@ async function loadWall(){
       if(owner){const b=el("button","no","Delete");b.onclick=()=>{b.disabled=true;removeDoc("notes",d.id)};c.append(b)}
       g.append(c);
     });
-  }catch(e){g.append(el("div","sunk err","Could not load notes."))}
+  }catch(e){g.replaceChildren(el("div","sunk err","Could not load notes."))}
 }
 
 async function loadMine(){
-  const box=$("mineList");box.replaceChildren();
-  if(!me)return box.append(el("div","sunk","Connecting..."));
+  const box=$("mineList");
+  if(!me)return box.replaceChildren(el("div","sunk","Connecting..."));
   try{
     const mk=(col,name)=>getAll(col,where("uid","==",me.uid)).then(ds=>ds.map(d=>({d,name})));
     const rows=(await Promise.all([mk(notes,"notes"),mk(priv,"private")])).flat().sort((a,b)=>secs(b.d)-secs(a.d));
+    box.replaceChildren();
     if(!rows.length)return box.append(el("div","sunk","You haven't sent anything from this browser yet."));
     rows.forEach(({d,name})=>{
       const n=d.data(),p=el("div","pend"),no=el("button","no","Delete");
@@ -410,14 +424,15 @@ async function loadMine(){
       no.onclick=()=>{no.disabled=true;removeDoc(name,d.id)};
       p.append(no);box.append(p);
     });
-  }catch(e){box.append(el("div","sunk err","Could not load your notes."))}
+  }catch(e){box.replaceChildren(el("div","sunk err","Could not load your notes."))}
 }
 
 async function loadInbox(){
-  const pb=$("pending"),vb=$("privBox");pb.replaceChildren();vb.replaceChildren();
+  const pb=$("pending"),vb=$("privBox");
   try{
     const [wn,pv]=await Promise.all([getAll(notes,where("approved","==",false)),getAll(priv)]);
     wn.sort((a,b)=>secs(a)-secs(b));pv.sort((a,b)=>(a.data().read?1:0)-(b.data().read?1:0)||secs(a)-secs(b));
+    pb.replaceChildren();vb.replaceChildren();
     $("pc").textContent=wn.length+pv.filter(d=>!d.data().read).length;
     if(!wn.length)pb.append(el("div","sunk","Nothing waiting."));
     if(!pv.length)vb.append(el("div","sunk","No private messages."));
@@ -434,7 +449,7 @@ async function loadInbox(){
       p.append(no);box.append(p);
     };
     wn.forEach(d=>card(d,pb,true));pv.forEach(d=>card(d,vb,false));
-  }catch(e){pb.append(el("div","sunk err","Could not load inbox."))}
+  }catch(e){pb.replaceChildren(el("div","sunk err","Could not load inbox."))}
 }
 
 async function submit(col,ta,pd,st,btn,cnt,max){
