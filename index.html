@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>grAy</title>
+<style>
+:root{--desk:#8fb5b0;--face:#c6bddc;--hi:#e4def0;--lo:#8d86a6;--dk:#4a4560;--bar:#7c66c4;--t1:#d98bb0;--t2:#8f7bd0;--ink:#2d2a38;--paper:#ece3c6;--field:#ece8f3;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;min-height:100vh;background:var(--desk);color:var(--ink);font:12px/1.4 Tahoma,Verdana,"MS Sans Serif",sans-serif;padding-bottom:40px;
+background-image:radial-gradient(var(--t2) 1px,transparent 1px),radial-gradient(var(--t1) 1px,transparent 1px);background-size:18px 18px;background-position:0 0,9px 9px}
+.win{background:var(--face);border:2px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);box-shadow:1px 1px 0 #0003,4px 4px 0 #0002;margin:14px auto;max-width:560px;outline:1px solid #2d2a38}
+.bar{display:flex;align-items:center;gap:6px;padding:3px 4px;background:var(--bar);color:#fff;font-weight:700;text-shadow:1px 1px 0 #0004}
+.bar span{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar i{width:16px;height:14px;background:var(--face);color:var(--ink);font:700 10px/12px Tahoma;text-align:center;font-style:normal;text-shadow:none;border:1px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi)}
+.body{padding:10px}
+h1{margin:0 0 4px;font:700 20px Georgia,serif;color:var(--ink)}
+.in{background:var(--field);border:2px solid;border-color:var(--dk) var(--hi) var(--hi) var(--dk);padding:6px;width:100%;font:12px Tahoma,Verdana,sans-serif;color:var(--ink)}
+textarea.in{height:90px;resize:vertical}
+label{display:block;margin:6px 0 2px}
+button{font:12px Tahoma,Verdana,sans-serif;color:var(--ink);background:var(--face);padding:4px 14px;border:2px solid;border-color:var(--hi) var(--dk) var(--dk) var(--hi);cursor:pointer}
+button:active{border-color:var(--dk) var(--hi) var(--hi) var(--dk)}
+button.ok{background:#a3d3b3}button.no{background:#e3a2ae}
+.row{display:flex;justify-content:space-between;align-items:center;margin-top:8px;gap:8px}
+#wall{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.note{background:var(--paper);border:1px solid var(--dk);box-shadow:2px 2px 0 #0002;display:flex;flex-direction:column;min-height:110px;word-break:break-word}
+.note b{background:var(--c,var(--t1));color:#fff;padding:2px 5px;font-size:11px;text-shadow:1px 1px 0 #0004}
+.note p{margin:0;padding:6px;flex:1;white-space:pre-wrap}
+.note small{padding:0 6px 4px;color:var(--lo)}
+.pend{background:var(--paper);border:1px dashed var(--dk);padding:6px;margin-bottom:6px}
+.pend p{margin:2px 0 6px;white-space:pre-wrap;word-break:break-word}
+.sunk{border:2px solid;border-color:var(--dk) var(--hi) var(--hi) var(--dk);padding:6px;background:var(--field)}
+.task{position:fixed;left:0;right:0;bottom:0;height:34px;display:flex;align-items:center;gap:6px;padding:3px 4px calc(3px + env(safe-area-inset-bottom,0px));height:calc(34px + env(safe-area-inset-bottom,0px));background:var(--face);border-top:2px solid var(--hi)}
+.start{font-weight:700;background:#e0a3c1}
+.pink .bar{background:#c9729f}
+h1{color:#a8456f}
+marquee{background:#e6c3d6!important}
+.tray{margin-left:auto;padding:3px 8px}
+.err{color:#c0305a}
+marquee{background:var(--field);border:2px solid;border-color:var(--dk) var(--hi) var(--hi) var(--dk);padding:2px}
+</style>
+</head>
+<body>
+
+<div class="win"><div class="bar"><span>&#128140; grAy.exe</span><i>_</i><i>&#9633;</i><i>x</i></div>
+<div class="body">
+<h1>grAy</h1>
+<marquee scrollamount="3">~*~ say what you never sent ~*~ no names, no traces, just words ~*~ best viewed in Internet Explorer 6 at 800x600 ~*~</marquee>
+</div></div>
+
+<div class="win pink"><div class="bar"><span>&#9993; New Message</span><i>_</i><i>&#9633;</i><i>x</i></div>
+<div class="body">
+<div class="sunk">To: Aadya</div>
+<label for="msg">Message:</label>
+<textarea id="msg" class="in" maxlength="500" placeholder="type your unsent note to aadya here..."></textarea>
+<div class="row"><small id="cnt">0 / 500</small><button id="send">Send anonymously</button></div>
+<div id="status" class="sunk" style="margin-top:8px">Ready.</div>
+</div></div>
+
+<div class="win pink" id="loginWin" hidden><div class="bar"><span>&#128273; Owner Login</span><i>_</i><i>&#9633;</i><i>x</i></div>
+<div class="body"><label for="em">Email:</label><input id="em" type="email" class="in"><label for="pw">Password:</label><input id="pw" type="password" class="in">
+<div class="row"><span></span><button id="login">Log in</button></div></div></div>
+
+<div class="win pink" id="inboxWin" hidden><div class="bar"><span>&#128274; Inbox - pending review (<b id="pc">0</b>)</span><i>_</i><i>&#9633;</i><i>x</i></div>
+<div class="body"><div id="inbox"><div class="sunk">Nothing waiting.</div></div></div></div>
+
+<div class="win"><div class="bar"><span>&#128193; The Wall (approved notes)</span><i>_</i><i>&#9633;</i><i>x</i></div>
+<div class="body"><div id="wall"><div class="sunk">Loading...</div></div></div></div>
+
+<div class="task"><button class="start">&#10084; Start</button><button>grAy.exe</button><button id="adminBtn">&#128273; admin</button><div class="sunk tray" id="clock"></div></div>
+
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import{getFirestore,collection,addDoc,getDocs,query,where,updateDoc,deleteDoc,doc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+
+const app=initializeApp({apiKey:"AIzaSyBK4O0nPD9aLba1lJWEZsFEfJFdswgNhys",authDomain:"gray-1287d.firebaseapp.com",projectId:"gray-1287d",appId:"1:742095355:web:5a82872e0ceef972aff35e"});
+const db=getFirestore(app),auth=getAuth(app),notes=collection(db,"notes");
+const $=id=>document.getElementById(id);
+const colors=["#d98bb0","#9a86d8","#5fb3a8","#d99a5e","#6f9fdc"];
+let authed=false;
+const say=(t,bad)=>{$("status").textContent=t;$("status").className="sunk"+(bad?" err":"")};
+const tick=()=>$("clock").textContent=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+tick();setInterval(tick,30000);
+$("msg").oninput=e=>$("cnt").textContent=e.target.value.length+" / 500";
+const el=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
+const secs=d=>d.data().createdAt?.seconds||0;
+const fetchNotes=async approved=>(await getDocs(query(notes,where("approved","==",approved)))).docs;
+
+async function loadWall(){
+  const w=$("wall");w.replaceChildren();
+  try{
+    const docs=(await fetchNotes(true)).sort((a,b)=>secs(b)-secs(a));
+    if(!docs.length)return w.append(el("div","sunk","No notes yet. Be the first!"));
+    docs.forEach(d=>{
+      const n=d.data(),c=el("div","note");
+      c.style.setProperty("--c",colors[n.color%colors.length]);
+      c.append(el("b",null,"To: Aadya"),el("p",null,n.body),el("small",null,n.createdAt?n.createdAt.toDate().toLocaleDateString():""));
+      w.append(c);
+    });
+  }catch(e){w.append(el("div","sunk err","Could not load notes."))}
+}
+
+async function loadInbox(){
+  const box=$("inbox");box.replaceChildren();
+  try{
+    const docs=(await fetchNotes(false)).sort((a,b)=>secs(a)-secs(b));
+    $("pc").textContent=docs.length;
+    if(!docs.length)return box.append(el("div","sunk","Nothing waiting."));
+    const act=async p=>{try{await p}catch(e){say("Action failed: "+e.code,1)}loadInbox();loadWall()};
+    docs.forEach(d=>{
+      const p=el("div","pend"),ok=el("button","ok","Approve"),no=el("button","no","Delete");
+      ok.onclick=()=>{ok.disabled=no.disabled=true;act(updateDoc(doc(db,"notes",d.id),{approved:true}))};
+      no.onclick=()=>{ok.disabled=no.disabled=true;act(deleteDoc(doc(db,"notes",d.id)))};
+      p.append(el("b",null,"To: Aadya"),el("p",null,d.data().body),ok," ",no);
+      box.append(p);
+    });
+  }catch(e){box.append(el("div","sunk err","Could not load inbox."))}
+}
+
+$("send").onclick=async()=>{
+  const body=$("msg").value.trim();
+  if(!body)return say("Type a message first.",1);
+  $("send").disabled=true;say("Sending...");
+  try{
+    await addDoc(notes,{body,color:Math.floor(Math.random()*colors.length),approved:false,createdAt:serverTimestamp()});
+    $("msg").value="";$("cnt").textContent="0 / 500";
+    say("Sent! Your note will appear once it has been reviewed.");
+  }catch(e){say("Could not send. Try again later.",1)}
+  $("send").disabled=false;
+};
+
+onAuthStateChanged(auth,u=>{
+  authed=!!u;
+  $("inboxWin").hidden=!authed;$("loginWin").hidden=true;
+  $("adminBtn").textContent=authed?"\u{1F513} log out":"\u{1F511} admin";
+  if(authed)loadInbox();
+});
+$("adminBtn").onclick=()=>authed?signOut(auth):($("loginWin").hidden=!$("loginWin").hidden);
+$("login").onclick=async()=>{
+  try{await signInWithEmailAndPassword(auth,$("em").value.trim(),$("pw").value);$("pw").value=""}
+  catch(e){say("Login failed: "+e.code,1)}
+};
+
+loadWall();
+</script>
+</body>
+</html>
