@@ -59,6 +59,7 @@ button.ok{background:#a3d3b3}button.no{background:#e3a2ae}
 .note button{margin:0 6px 6px;font-size:12px;padding:2px 8px}
 .pend{background:var(--paper);border:1px dashed var(--dk);padding:6px;margin-bottom:6px}
 .pend p{margin:2px 0 6px;font:18px/1.15 var(--hand);white-space:pre-wrap;word-break:break-word}
+.pend.read{opacity:.65}
 .tag{display:inline-block;background:var(--t2);color:#fff;font-size:12px;padding:0 6px;margin-right:4px}
 .sunk{border:2px solid;border-color:var(--dk) var(--hi) var(--hi) var(--dk);padding:6px;background:var(--field)}
 .sunk small{color:var(--lo)}
@@ -416,16 +417,17 @@ async function loadInbox(){
   const pb=$("pending"),vb=$("privBox");pb.replaceChildren();vb.replaceChildren();
   try{
     const [wn,pv]=await Promise.all([getAll(notes,where("approved","==",false)),getAll(priv)]);
-    wn.sort((a,b)=>secs(a)-secs(b));pv.sort((a,b)=>secs(a)-secs(b));
-    $("pc").textContent=wn.length+pv.length;
+    wn.sort((a,b)=>secs(a)-secs(b));pv.sort((a,b)=>(a.data().read?1:0)-(b.data().read?1:0)||secs(a)-secs(b));
+    $("pc").textContent=wn.length+pv.filter(d=>!d.data().read).length;
     if(!wn.length)pb.append(el("div","sunk","Nothing waiting."));
     if(!pv.length)vb.append(el("div","sunk","No private messages."));
     const card=(d,box,approve)=>{
-      const p=el("div","pend"),no=el("button","no","Delete");
-      p.append(el("p",null,d.data().body));addImg(p,d.data().img);
-      if(approve){
-        const ok=el("button","ok","Approve");
-        ok.onclick=async()=>{ok.disabled=no.disabled=true;try{await updateDoc(doc(db,"notes",d.id),{approved:true})}catch(e){alert("Could not approve: "+e.code)}refresh()};
+      const n=d.data(),p=el("div","pend"+(!approve&&n.read?" read":"")),no=el("button","no","Delete");
+      if(!approve&&n.read)p.append(el("span","tag","read"));
+      p.append(el("p",null,n.body));addImg(p,n.img);
+      if(approve||!n.read){
+        const ok=el("button","ok",approve?"Approve":"Accept");
+        ok.onclick=async()=>{ok.disabled=no.disabled=true;try{await updateDoc(doc(db,approve?"notes":"private",d.id),approve?{approved:true}:{read:true})}catch(e){alert("Could not save: "+e.code)}refresh()};
         p.append(ok," ");
       }
       no.onclick=()=>{no.disabled=true;removeDoc(approve?"notes":"private",d.id)};
