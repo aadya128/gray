@@ -76,7 +76,7 @@ import{initializeApp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-ap
 import{getFirestore,collection,addDoc,getDocs,query,where,updateDoc,deleteDoc,doc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 import{getAuth,signInWithEmailAndPassword,signOut,onAuthStateChanged}from"https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
 
-const app=initializeApp({apiKey:"AIzaSyBK4O0nPD9aLba1lJWEZsFEfJFdswgNhys",authDomain:"gray-1287d.firebaseapp.com",projectId:"gray-1287d",appId:"1:742095355:web:5a82872e0ceef972aff35e"});
+const app=initializeApp({apiKey:"",authDomain:".firebaseapp.com",projectId:"",appId:""});
 const db=getFirestore(app),auth=getAuth(app),notes=collection(db,"notes");
 const $=id=>document.getElementById(id);
 const colors=["#d98bb0","#9a86d8","#5fb3a8","#d99a5e","#6f9fdc"];
