@@ -270,31 +270,64 @@ function recSVG(){
   return`<svg viewBox="0 0 26 13" width="52" height="26" shape-rendering="crispEdges"><g class="disc">${d}</g><g class="arm"><rect x="14" y="2" width="11" height="1" fill="#4a4560"/><rect x="13" y="2" width="2" height="2" fill="#2d2a38"/><rect x="24" y="1" width="2" height="3" fill="#4a4560"/></g></svg>`;
 }
 $("rec").innerHTML=recSVG();
-const CH=[[60,64,67,71],[57,60,64,67],[53,57,60,64],[55,59,62,65]],BS=[48,45,41,43],ARP=[0,1,2,3,2,1,2,1];
-const MEL=[76,0,0,74,0,72,0,0,69,0,72,0,0,71,0,0,72,0,0,69,0,0,67,0,67,0,71,0,74,0,0,0];
+const DUR=.36,ARP=[0,1,2,3,4,5,4,3];
+const CH=[
+{t:[48,55,59,64,67,71],p:[55,59,64,67],b:36},
+{t:[52,55,59,62,64,67],p:[55,59,62,64],b:40},
+{t:[53,57,60,64,65,69],p:[57,60,64,65],b:41},
+{t:[55,59,62,64,67,71],p:[59,62,64,67],b:43},
+{t:[57,60,64,67,69,72],p:[60,64,67,69],b:45},
+{t:[50,53,57,60,64,69],p:[57,60,64,65],b:38},
+{t:[53,57,60,64,69,71],p:[57,60,64,71],b:41},
+{t:[55,60,62,65,67,72],p:[60,62,65,67],b:43}];
+const MEL=[76,0,0,79,0,76,74,0, 71,0,0,74,0,76,0,0, 72,0,0,77,0,76,0,72, 74,0,0,71,0,67,0,0,
+ 76,0,0,72,0,76,0,79, 77,0,0,74,0,72,0,0, 76,0,0,79,0,83,0,81, 79,0,0,0,77,0,74,0];
+const PENT=[60,62,64,67,69,72,74,76,79,81,84,86],SPK=[84,86,88,91,93,96];
 let ac,master,timer=0,nextT=0,stepN=0,playing=false;
 const hz=m=>440*2**((m-69)/12);
-function blip(m,t,type,vol,len){
+function tone(f,t,v,len,type="sine"){
   const o=ac.createOscillator(),g=ac.createGain();
-  o.type=type;o.frequency.value=hz(m);
-  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+len);
-  o.connect(g).connect(master);o.start(t);o.stop(t+len+.05);
+  o.type=type;o.frequency.value=f;
+  g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v,t+.006);g.gain.exponentialRampToValueAtTime(.0001,t+len);
+  o.connect(g);g.connect(master);o.start(t);o.stop(t+len+.05);
+}
+const harp=(m,t,v)=>{const f=hz(m);tone(f,t,v,2,"triangle");tone(f*2,t,v*.3,.9)};
+const piano=(m,t,v)=>{const f=hz(m);[1,.5,.28,.14,.07].forEach((a,i)=>tone(f*(i+1),t,v*a,1.7-i*.2))};
+const bell=(m,t,v)=>{const f=hz(m);tone(f,t,v,1.4);tone(f*2.76,t,v*.5,.5);tone(f*5.4,t,v*.2,.25)};
+function strings(notes,t){
+  const lp=ac.createBiquadFilter(),len=DUR*8+.8;
+  lp.type="lowpass";lp.frequency.value=900;lp.connect(master);
+  notes.forEach(m=>[-6,6].forEach(d=>{
+    const o=ac.createOscillator(),g=ac.createGain();
+    o.type="sawtooth";o.frequency.value=hz(m);o.detune.value=d;
+    g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(.014,t+.9);g.gain.linearRampToValueAtTime(.0001,t+len);
+    o.connect(g);g.connect(lp);o.start(t);o.stop(t+len+.05);
+  }));
+}
+function reverbIR(c){
+  const n=c.sampleRate*2.8|0,b=c.createBuffer(2,n,c.sampleRate);
+  for(let ch=0;ch<2;ch++){const d=b.getChannelData(ch);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n)**2.2}
+  return b;
 }
 function pump(){
-  while(nextT<ac.currentTime+.25){
-    const c=Math.floor(stepN/8)%4;
-    blip(CH[c][ARP[stepN%8]],nextT,"triangle",.09,.5);
-    if(stepN%4===0)blip(BS[c],nextT,"sine",.16,.9);
-    if(MEL[stepN])blip(MEL[stepN],nextT,"square",.025,.4);
-    nextT+=.4;stepN=(stepN+1)%32;
+  while(nextT<ac.currentTime+.3){
+    const s=stepN%8,c=CH[Math.floor(stepN/8)],t=nextT;
+    if(stepN===0)PENT.forEach((m,i)=>harp(m,t+i*.05,.04));
+    if(s===0){strings(c.p,t);tone(hz(c.b),t,.1,1.6);piano(c.p[0]-12,t,.05)}
+    if(s===4)tone(hz(c.b),t,.06,1.4);
+    harp(c.t[ARP[s]],t,.07+Math.random()*.02);
+    if(MEL[stepN])piano(MEL[stepN],t,.09);
+    if(s%2&&Math.random()<.55)bell(SPK[Math.random()*SPK.length|0],t+Math.random()*.12,.035);
+    nextT+=DUR;stepN=(stepN+1)%64;
   }
 }
 function startMusic(){
   const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
   if(!ac){
-    ac=new AC();master=ac.createGain();master.gain.value=.5;
-    const lp=ac.createBiquadFilter();lp.type="lowpass";lp.frequency.value=2200;
-    master.connect(lp);lp.connect(ac.destination);
+    ac=new AC();master=ac.createGain();master.gain.value=.55;
+    const lp=ac.createBiquadFilter(),comp=ac.createDynamicsCompressor(),dry=ac.createGain(),wet=ac.createGain(),rv=ac.createConvolver();
+    lp.type="lowpass";lp.frequency.value=7000;dry.gain.value=.75;wet.gain.value=.55;rv.buffer=reverbIR(ac);
+    master.connect(dry);master.connect(rv);rv.connect(wet);dry.connect(lp);wet.connect(lp);lp.connect(comp);comp.connect(ac.destination);
   }
   ac.resume();
   if(!timer){nextT=ac.currentTime+.1;timer=setInterval(pump,40)}
